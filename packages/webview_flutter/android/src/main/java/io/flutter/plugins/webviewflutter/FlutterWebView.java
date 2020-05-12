@@ -170,6 +170,9 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
       case "getScrollY":
         getScrollY(result);
         break;
+      case "stopLoading":
+        stopLoading(methodCall, result);
+        break;
       default:
         result.notImplemented();
     }
@@ -261,6 +264,11 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
     WebStorage.getInstance().deleteAllData();
     result.success(null);
   }
+  private void stopLoading(MethodCall call, Result result){
+    webView.stopLoading();
+    result.success(null);
+  }
+
 
   private void getTitle(Result result) {
     result.success(webView.getTitle());
@@ -301,15 +309,12 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
           break;
         case "hasNavigationDelegate":
           final boolean hasNavigationDelegate = (boolean) settings.get(key);
-
           final WebViewClient webViewClient =
               flutterWebViewClient.createWebViewClient(hasNavigationDelegate);
-
           webView.setWebViewClient(webViewClient);
           break;
         case "debuggingEnabled":
           final boolean debuggingEnabled = (boolean) settings.get(key);
-
           webView.setWebContentsDebuggingEnabled(debuggingEnabled);
           break;
         case "gestureNavigationEnabled":

@@ -75,13 +75,26 @@ class FlutterWebViewClient {
     throw new IllegalArgumentException(message);
   }
 
+  // Returns apropriate String for ?client=android
+  private String clientAndroid(String url){
+    String attach = "client=android";
+    if(url.contains("?src=bc")){
+      attach = "&" + attach;
+    }
+    else
+      attach = "?" + attach;
+
+    return attach;
+  }
+
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   private boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
     if (!hasNavigationDelegate) {
       return false;
     }
+    String attachToUrl = clientAndroid(request.getUrl().toString());
     notifyOnNavigationRequest(
-        request.getUrl().toString(), request.getRequestHeaders(), view, request.isForMainFrame());
+        request.getUrl().toString()+attachToUrl, request.getRequestHeaders(), view, request.isForMainFrame());
     // We must make a synchronous decision here whether to allow the navigation or not,
     // if the Dart code has set a navigation delegate we want that delegate to decide whether
     // to navigate or not, and as we cannot get a response from the Dart delegate synchronously we

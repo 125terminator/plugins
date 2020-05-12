@@ -158,6 +158,9 @@
     [self getScrollX:call result:result];
   } else if ([[call method] isEqualToString:@"getScrollY"]) {
     [self getScrollY:call result:result];
+    }
+    else if([[call method] isEqualToString:@"stopLoading"]){
+    [self stopLoading:call result:result];
   } else {
     result(FlutterMethodNotImplemented);
   }
@@ -311,6 +314,11 @@
 - (void)getScrollY:(FlutterMethodCall*)call result:(FlutterResult)result {
   int offsetY = _webView.scrollView.contentOffset.y;
   result([NSNumber numberWithInt:offsetY]);
+}
+
+- (void)stopLoading: (FlutterMethodCall*)call result:(FlutterResult)result{
+    [_webView stopLoading];
+      result(nil);
 }
 
 // Returns nil when successful, or an error message when one or more keys are unknown.

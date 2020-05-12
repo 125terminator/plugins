@@ -1,0 +1,2 @@
+1. Cookie Manager -android, ios
+2. stopLoading function - android, ios

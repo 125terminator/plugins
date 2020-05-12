@@ -21,7 +21,14 @@
 - (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation {
   [_methodChannel invokeMethod:@"onPageStarted" arguments:@{@"url" : webView.URL.absoluteString}];
 }
-
+// Returns apropriate String for ?client=android
+- (NSString *)clientAndroid: (NSString *)url{
+    if([url rangeOfString:@"bla"].location != NSNotFound){
+        return @"&client=android";
+    }
+    else
+        return @"?client=android";
+    }
 - (void)webView:(WKWebView *)webView
     decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
                     decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
@@ -29,8 +36,10 @@
     decisionHandler(WKNavigationActionPolicyAllow);
     return;
   }
+
+  NSString *res = [self clientAndroid: str], *attach = [navigationAction.request.URL.absoluteString stringByAppendingString:res];
   NSDictionary *arguments = @{
-    @"url" : navigationAction.request.URL.absoluteString,
+    @"url" : attach,
     @"isForMainFrame" : @(navigationAction.targetFrame.isMainFrame)
   };
   [_methodChannel invokeMethod:@"navigationRequest"

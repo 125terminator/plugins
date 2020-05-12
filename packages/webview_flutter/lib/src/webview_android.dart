@@ -60,4 +60,23 @@ class AndroidWebView implements WebViewPlatform {
 
   @override
   Future<bool> clearCookies() => MethodChannelWebViewPlatform.clearCookies();
+
+  @override
+  Future<bool> setCookie({@required String url,
+    @required String name,
+    @required String value,
+    String domain,
+    String path = "/",
+    int expiresDate,
+    int maxAge,
+    bool isSecure}) => MethodChannelWebViewPlatform.setCookie(url: url,
+      name: name,
+      value: value,
+      domain: domain,
+      path: path,
+      expiresDate: expiresDate,
+      maxAge: maxAge,
+      isSecure: isSecure);
+
+
 }

@@ -226,6 +226,11 @@ abstract class WebViewPlatformController {
         "WebView reload is not implemented on the current platform");
   }
 
+  Future<void> stopLoading() {
+    throw UnimplementedError(
+        "WebView stopLoading is not implemented on the current platform");
+  }
+
   /// Clears all caches used by the [WebView].
   ///
   /// The following caches are cleared:
@@ -512,4 +517,16 @@ abstract class WebViewPlatform {
     throw UnimplementedError(
         "WebView clearCookies is not implemented on the current platform");
   }
+  Future<bool> setCookie({@required String url,
+    @required String name,
+    @required String value,
+    String domain,
+    String path = "/",
+    int expiresDate,
+    int maxAge,
+    bool isSecure}) {
+    throw UnimplementedError(
+        "WebView setCookie is not implemented on the current platform");
+  }
 }
+

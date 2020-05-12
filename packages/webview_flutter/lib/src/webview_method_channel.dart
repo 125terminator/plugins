@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../platform_interface.dart';
@@ -101,6 +102,9 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
   Future<void> clearCache() => _channel.invokeMethod<void>("clearCache");
 
   @override
+  Future<void> stopLoading() => _channel.invokeMethod<void>("stopLoading");
+
+  @override
   Future<void> updateSettings(WebSettings settings) {
     final Map<String, dynamic> updatesMap = _webSettingsToMap(settings);
     if (updatesMap.isEmpty) {
@@ -159,6 +163,48 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
         .then<bool>((dynamic result) => result);
   }
 
+  // Method channel implementation for [WebViewPlatform.setCookie].
+  static Future<bool> setCookie(
+      {@required String url,
+        @required String name,
+        @required String value,
+        String domain,
+        String path = "/",
+        int expiresDate,
+        int maxAge,
+        bool isSecure}) async {
+    if (domain == null) domain = _getDomainName(url);
+
+    assert(url != null && url.isNotEmpty);
+    assert(name != null && name.isNotEmpty);
+    assert(value != null && value.isNotEmpty);
+    assert(domain != null && domain.isNotEmpty);
+    assert(path != null && path.isNotEmpty);
+
+    Map<String, dynamic> args = <String, dynamic>{};
+    args.putIfAbsent('url', () => url);
+    args.putIfAbsent('name', () => name);
+    args.putIfAbsent('value', () => value);
+    args.putIfAbsent('domain', () => domain);
+    args.putIfAbsent('path', () => path);
+    args.putIfAbsent('expiresDate', () => expiresDate?.toString());
+    args.putIfAbsent('maxAge', () => maxAge);
+    args.putIfAbsent('isSecure', () => isSecure);
+
+    return  _cookieManagerChannel
+        .invokeMethod<bool>('setCookie', args)
+        .then<bool>((dynamic result) => result);
+  }
+
+
+
+  static String _getDomainName(String url) {
+    Uri uri = Uri.parse(url);
+    String domain = uri.host;
+    if (domain == null) return "";
+    return domain.startsWith("www.") ? domain.substring(4) : domain;
+  }
+
   static Map<String, dynamic> _webSettingsToMap(WebSettings settings) {
     final Map<String, dynamic> map = <String, dynamic>{};
     void _addIfNonNull(String key, dynamic value) {
@@ -199,3 +245,4 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
     };
   }
 }
+

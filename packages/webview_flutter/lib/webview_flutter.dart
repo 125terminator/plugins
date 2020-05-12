@@ -321,6 +321,18 @@ class WebView extends StatefulWidget {
   /// By default `userAgent` is null.
   final String userAgent;
 
+  ///The value used for keeping history
+  static List<String> historyWebview = new List();
+
+  static historyWebviewAdd(String historyWebviewUrl)
+  {
+    historyWebview.add(historyWebviewUrl);
+  }
+  static historyWebviewRemove(){
+    if(historyWebview.length>0)
+      historyWebview.removeLast();
+  }
+
   /// Which restrictions apply on automatic media playback.
   ///
   /// This initial value is applied to the platform's webview upon creation. Any following
@@ -374,6 +386,7 @@ class _WebViewState extends State<WebView> {
     if (widget.onWebViewCreated != null) {
       widget.onWebViewCreated(controller);
     }
+    _platformCallbacksHandler.defineController(controller);
   }
 
   void _assertJavascriptChannelNamesAreUnique() {
@@ -458,7 +471,11 @@ class _PlatformCallbacksHandler implements WebViewPlatformCallbacksHandler {
   }
 
   WebView _widget;
+  WebViewController controllerHistory;
 
+  defineController(WebViewController controller){
+    controllerHistory = controller;
+  }
   // Maps a channel name to a channel.
   final Map<String, JavascriptChannel> _javascriptChannels =
       <String, JavascriptChannel>{};
@@ -475,6 +492,36 @@ class _PlatformCallbacksHandler implements WebViewPlatformCallbacksHandler {
     final bool allowNavigation = _widget.navigationDelegate == null ||
         await _widget.navigationDelegate(request) ==
             NavigationDecision.navigate;
+
+    //History maintaining
+    // Modified goBack() function to pop the last item of Webview.historyWebview
+    if(allowNavigation)
+    {
+      String urlWithoutGetPara = url.substring(0, url.indexOf('?'));
+      int indexOfUrl = WebView.historyWebview.indexOf(urlWithoutGetPara);
+      int historyWebviewLength = WebView.historyWebview.length;
+      print("History - ${WebView.historyWebview}");
+      if(indexOfUrl != -1)
+      {
+        for(int i=historyWebviewLength-1; i>=indexOfUrl; i--)
+          {
+
+              if(await controllerHistory?.canGoBack() == true)
+                {
+                  print("Removing history ${WebView.historyWebview.last}");
+                  controllerHistory.goBack();
+                }
+              else
+                break;
+          }
+        return false;
+      }
+      if(WebView.historyWebview.length ==0 || WebView.historyWebview.last != urlWithoutGetPara)
+        {
+          WebView.historyWebviewAdd(urlWithoutGetPara);
+          print("LastUrl : ${WebView.historyWebview.last}");
+        }
+    }
     return allowNavigation;
   }
 
@@ -579,6 +626,7 @@ class WebViewController {
   ///
   /// If there is no back history item this is a no-op.
   Future<void> goBack() {
+    WebView.historyWebviewRemove();
     return _webViewPlatformController.goBack();
   }
 
@@ -592,6 +640,10 @@ class WebViewController {
   /// Reloads the current URL.
   Future<void> reload() {
     return _webViewPlatformController.reload();
+  }
+
+  Future<void> stopLoading() {
+    return _webViewPlatformController.stopLoading();
   }
 
   /// Clears all caches used by the [WebView].
@@ -723,6 +775,23 @@ class CookieManager {
   ///
   /// Returns true if cookies were present before clearing, else false.
   Future<bool> clearCookies() => WebView.platform.clearCookies();
+  Future<bool> setCookie({@required String url,
+    @required String name,
+    @required String value,
+    String domain,
+    String path = "/",
+    int expiresDate,
+    int maxAge,
+    bool isSecure}) => WebView.platform.setCookie(url: url,
+  name: name,
+  value: value,
+  domain: domain,
+  path: path,
+  expiresDate: expiresDate,
+  maxAge: maxAge,
+  isSecure: isSecure);
+
+
 }
 
 // Throws an ArgumentError if `url` is not a valid URL string.

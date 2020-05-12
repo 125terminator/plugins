@@ -60,6 +60,7 @@ public class WebViewFlutterPlugin implements FlutterPlugin {
         .registerViewFactory(
             "plugins.flutter.io/webview", new WebViewFactory(messenger, /*containerView=*/ null));
     flutterCookieManager = new FlutterCookieManager(messenger);
+    Shared.applicationContext = binding.getApplicationContext();
   }
 
   @Override
